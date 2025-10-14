@@ -1,8 +1,11 @@
 # Dependências
 /node_modules
+node_modules
+.gitignore
 
 # Código compilado de TypeScript
 /dist
+dist
 
 # Arquivos de log
 logs
