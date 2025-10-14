@@ -1,0 +1,47 @@
+# Versão do Docker Compose
+version: "3.8"
+
+# Seção onde definimos todos os nossos contêineres/serviços
+services:
+  # 1. Serviço da nossa API
+  app:
+    container_name: api-papse # Nome amigável para o contêiner
+    build: . # Diz para o Compose construir a imagem usando o Dockerfile na pasta atual ('.')
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 da sua máquina para a porta 3000 do contêiner
+    environment:
+      # As variáveis da API podem continuar no formato de lista ou mudar para mapa
+      DATABASE_URL: mysql://docker_user:supersecreto@db:3306/papse_db
+      PORT: 3000
+    depends_on:
+      - db # Garante que o contêiner 'db' seja iniciado ANTES do contêiner 'app'
+    volumes:
+      # Monta o código da sua máquina para dentro do contêiner para desenvolvimento.
+      # Qualquer alteração no seu código será refletida instantaneamente.
+      - ./src:/usr/src/app/src
+
+  # 2. Serviço do Banco de Dados MySQL
+  db:
+    image: mysql:8.0 # Usa a imagem oficial do MySQL
+    container_name: mysql-db # Nome amigável
+
+    # --- SEÇÃO CORRIGIDA ---
+    # Note que removemos os traços (-) e usamos o formato chave: valor
+    environment:
+      MYSQL_ROOT_PASSWORD: supersecreto
+      MYSQL_DATABASE: papse_db
+      MYSQL_USER: docker_user
+      MYSQL_PASSWORD: supersecreto
+    # --- FIM DA SEÇÃO CORRIGIDA ---
+
+    ports:
+      # Expõe a porta do MySQL para que possamos conectar com um cliente de BD (DBeaver, Workbench)
+      - "3307:3306"
+    volumes:
+      # Garante que os dados do MySQL sejam salvos fora do contêiner.
+      # Se o contêiner for removido, seus dados permanecerão.
+      - mysql-data:/var/lib/mysql
+
+# Define o volume nomeado que usamos acima
+volumes:
+  mysql-data:
