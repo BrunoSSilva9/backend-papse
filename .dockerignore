@@ -1,8 +1,9 @@
 # Dependências
-/node_modules
+node_modules
 
 # Código compilado de TypeScript
-/dist
+dist
+
 
 # Arquivos de log
 logs
@@ -21,3 +22,6 @@ yarn-error.log*
 # Arquivos de sistema operacional
 .DS_Store
 Thumbs.db
+
+#
+.dockerignore
