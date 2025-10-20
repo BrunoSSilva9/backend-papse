@@ -1,5 +1,6 @@
 import express from "express";
 import pacienteRoutes from "./routes/paciente.routes.js";
+import protocoloRoutes from "./routes/protocolo.routes.js";
 
 console.log("✅ server.ts foi carregado");
 
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api", pacienteRoutes);
+app.use("/api", protocoloRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "API está funcionando!" });
