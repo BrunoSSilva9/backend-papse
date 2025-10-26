@@ -1,5 +1,5 @@
-import { prisma } from "../lib/prisma.js"; 
-
+import { prisma } from "../lib/prisma.js";
+import type { Prisma } from "@prisma/client";
 
 export interface CreatePacienteDto {
   nome: string;
@@ -12,22 +12,38 @@ export interface CreatePacienteDto {
 }
 
 export type UpdatePacienteDto = Partial<CreatePacienteDto>;
-
 export class PacienteService {
-
   async create(data: CreatePacienteDto) {
     try {
-      const paciente = await prisma.paciente.create({
-        data: {
-          ...data,
-          data_nascimento: new Date(data.data_nascimento),
-          data_inscricao: new Date(data.data_inscricao),
-        },
-      });
-      return paciente;
+      const novoPaciente = await prisma.$transaction(
+        async (tx: Prisma.TransactionClient) => {
+          const paciente = await tx.paciente.create({
+            data: {
+              ...data,
+              data_nascimento: new Date(data.data_nascimento),
+              data_inscricao: new Date(data.data_inscricao),
+            },
+          });
+
+          await tx.listaEspera.create({
+            data: {
+              idPaciente: paciente.idPaciente,
+            },
+          });
+
+          return paciente;
+        }
+      );
+      return novoPaciente;
     } catch (error) {
-      console.error("Erro ao criar paciente:", error);
-      throw new Error("Não foi possível criar o paciente.");
+      console.error(
+        "Erro ao criar paciente e adicionar à lista de espera:",
+        error
+      );
+
+      throw new Error(
+        "Não foi possível criar o paciente e adicioná-lo à lista de espera."
+      );
     }
   }
 
@@ -46,6 +62,7 @@ export class PacienteService {
       const paciente = await prisma.paciente.findUniqueOrThrow({
         where: { idPaciente: id },
       });
+
       return paciente;
     } catch (error) {
       console.error(`Erro ao buscar paciente com ID ${id}:`, error);
@@ -58,10 +75,10 @@ export class PacienteService {
     try {
       const paciente = await prisma.paciente.update({
         where: { idPaciente: id },
+
         data: {
           ...data,
           ...(data.data_nascimento && {
-
             data_nascimento: new Date(data.data_nascimento),
           }),
           ...(data.data_inscricao && {
@@ -69,6 +86,7 @@ export class PacienteService {
           }),
         },
       });
+
       return paciente;
     } catch (error) {
       console.error(`Erro ao atualizar paciente com ID ${id}:`, error);
