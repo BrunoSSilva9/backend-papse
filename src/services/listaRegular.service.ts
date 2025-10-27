@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { Prisma } from "@prisma/client";
 
 export interface CreateListaRegularDto {
   idPaciente: number;
@@ -8,22 +9,18 @@ export interface CreateListaRegularDto {
 export class ListaRegularService {
   async create(data: CreateListaRegularDto) {
     try {
-      return prisma.$transaction(async (tx) => {
+      return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const pacienteEmEspera = await tx.listaEspera.findFirst({
           where: { idPaciente: data.idPaciente },
         });
 
         if (!pacienteEmEspera) {
-          throw new Error("❌ O paciente não está na lista de espera.");
+          throw new Error("Paciente não encontrado na lista de espera.");
         }
 
-        const colaborador = await tx.colaborador.findUnique({
+        await tx.colaborador.findUniqueOrThrow({
           where: { idBolsista: data.idBolsista },
         });
-
-        if (!colaborador) {
-          throw new Error("❌ O colaborador informado não existe.");
-        }
 
         const novoRegistro = await tx.listaRegular.create({
           data: {
@@ -39,33 +36,44 @@ export class ListaRegularService {
         return novoRegistro;
       });
     } catch (error: any) {
-        console.error("🚨 Erro ao mover paciente da lista de espera:", error);
-
-      if (error instanceof Error) {
-        throw new Error(error.message);
+      if (error.code === "P2025") {
+        console.error(
+          "Erro ao criar na lista regular: Colaborador não encontrado.",
+          error
+        );
+        throw new Error("Colaborador informado não existe.");
+      }
+      if (
+        error instanceof Error &&
+        error.message === "Paciente não encontrado na lista de espera."
+      ) {
+        console.error("Erro ao criar na lista regular:", error.message);
+        throw error;
       }
 
+      console.error(
+        "Erro ao mover paciente da lista de espera para a regular:",
+        error
+      );
       throw new Error("Erro interno ao adicionar paciente na lista regular.");
     }
   }
 
- async findAll() {
+  async findAll() {
     try {
       const lista = await prisma.listaRegular.findMany({
         include: {
-          paciente: true,   
-          colaborador: true 
+          paciente: true,
+          colaborador: true,
         },
         orderBy: {
           idListaRegular: "asc",
         },
       });
-
       return lista;
     } catch (error: any) {
-      console.error("🚨 Erro ao buscar lista regular:", error);
-
-      throw new Error("Erro ao buscar os registros da lista regular.");
+      console.error("Erro ao buscar lista regular:", error);
+      throw new Error("Não foi possível buscar os registros da lista regular.");
     }
   }
 
@@ -75,27 +83,44 @@ export class ListaRegularService {
         where: { idListaRegular: id },
         include: {
           paciente: true,
-          colaborador: true
+          colaborador: true,
         },
       });
       return entradaListaRegular;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        console.error(`Entrada da lista regular com ID ${id} não encontrada.`);
+        throw new Error("Entrada da lista regular não encontrada.");
+      }
       console.error(
         `Erro ao buscar entrada da lista regular com ID ${id}:`,
         error
       );
-      throw new Error("Entrada da lista regular não encontrada.");
+      throw new Error("Erro ao buscar a entrada da lista regular.");
     }
   }
 
   async delete(id: number) {
     try {
+      await prisma.listaRegular.findUniqueOrThrow({
+        where: { idListaRegular: id },
+      });
+
       await prisma.listaRegular.delete({
         where: { idListaRegular: id },
       });
-    } catch (error) {
-      console.error(`Erro ao deletar entrada da lista regular com ID ${id}:`, error);
-      throw new Error("Erro ao deletar entrada da lista regular.");
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        console.error(
+          `Entrada da lista regular com ID ${id} não encontrada para deletar.`
+        );
+        throw new Error("Entrada da lista regular não encontrada.");
+      }
+      console.error(
+        `Erro ao deletar entrada da lista regular com ID ${id}:`,
+        error
+      );
+      throw new Error("Erro ao deletar a entrada da lista regular.");
     }
   }
 }
