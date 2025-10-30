@@ -17,6 +17,7 @@ app.use("/api", pacienteRoutes);
 app.use("/api", protocoloRoutes);
 app.use("/api", colaboradorRoutes);
 app.use("/api", listaEsperaRoutes);
+app.use("/api", listaRegularRoutes);
 app.use("/api", regularRoutes);
 
 app.get("/", (req, res) => {
