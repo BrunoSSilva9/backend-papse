@@ -40,7 +40,6 @@ export class RegularService {
           });
         }
 
-
         const novoRegistro = await tx.regular.create({
           data: {
             data_inicio_atendimento: new Date(data.data_inicio_atendimento),
@@ -94,37 +93,53 @@ export class RegularService {
   }
 
   async findOne(id: number) {
-  try {
-    const registro = await prisma.regular.findUniqueOrThrow({
-      where: { idRegular: id },
-      include: {
-        paciente: true,
-        colaborador: true,
-      },
-    });
-    return registro;
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      console.error(`Registro regular com ID ${id} não encontrado.`);
-      throw new Error("Registro regular não encontrado.");
-    }
-    console.error(`Erro ao buscar registro regular com ID ${id}:`, error);
-    throw new Error("Erro ao buscar o registro regular.");
-    }
-    }
-
-    async delete(id: number) {
     try {
-      await prisma.regular.delete({
+      const registro = await prisma.regular.findUniqueOrThrow({
         where: { idRegular: id },
+        include: {
+          paciente: true,
+          colaborador: true,
+        },
       });
+      return registro;
     } catch (error: any) {
       if (error.code === "P2025") {
         console.error(`Registro regular com ID ${id} não encontrado.`);
         throw new Error("Registro regular não encontrado.");
       }
-      console.error(`Erro ao deletar registro regular com ID ${id}:`, error);
-      throw new Error("Erro ao deletar o registro regular.");
+      console.error(`Erro ao buscar registro regular com ID ${id}:`, error);
+      throw new Error("Erro ao buscar o registro regular.");
+    }
+  }
+
+  async delete(id: number) {
+    try {
+      const regularParaArquivar = await prisma.regular.findUniqueOrThrow({
+        where: { idRegular: id },
+      });
+
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await tx.regular.delete({
+          where: { idRegular: id },
+        });
+
+        await tx.historico.create({
+          data: {
+            idPaciente: regularParaArquivar.idPaciente,
+            id_ultimo_bolsista: regularParaArquivar.idBolsista,
+            data_desligamento: new Date(),
+          },
+        });
+      });
+    } catch (error: any) {
+      if (error.code === "P2025" || error.message.includes("não encontrado")) {
+        throw new Error("Registro de atendimento regular não encontrado.");
+      }
+      console.error(
+        `Erro ao arquivar registro de atendimento regular com ID ${id}:`,
+        error
+      );
+      throw new Error("Não foi possível arquivar o registro.");
     }
   }
 }

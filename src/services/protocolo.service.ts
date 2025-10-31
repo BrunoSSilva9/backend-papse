@@ -103,19 +103,34 @@ export class ProtocoloService {
     }
   }
 
-  public async delete(id: number) {
+  async delete(id: number) {
     try {
-      await prisma.protocolo.findUniqueOrThrow({ where: { idProtocolo: id } });
-
-      await prisma.protocolo.delete({
+      const protocoloParaArquivar = await prisma.protocolo.findUniqueOrThrow({
         where: { idProtocolo: id },
       });
+
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        await tx.protocolo.delete({
+          where: { idProtocolo: id },
+        });
+
+        await tx.historico.create({
+          data: {
+            idPaciente: protocoloParaArquivar.idPaciente,
+            id_ultimo_bolsista: protocoloParaArquivar.idBolsista,
+            data_desligamento: new Date(),
+          },
+        });
+      });
     } catch (error: any) {
-      if (error.code === "P2025") {
-        throw new Error("Protocolo não encontrado para deletar.");
+      if (error.code === "P2025" || error.message.includes("não encontrado")) {
+        throw new Error("Registro de protocolo não encontrado.");
       }
-      console.error("Erro ao deletar protocolo:", error);
-      throw new Error("Não foi possível deletar o protocolo.");
+      console.error(
+        `Erro ao arquivar registro do protocolo com ID ${id}:`,
+        error
+      );
+      throw new Error("Não foi possível arquivar o registro.");
     }
   }
 }
