@@ -18,7 +18,7 @@ export class ListaRegularController {
 
   public findAll = async (req: Request, res: Response) => {
     try {
-      const entradas = await this.listaRegularService.findAll();
+      const entradas = await this.listaRegularService.findAll(req.user);
       res.status(200).json(entradas);
     } catch (error: any) {
       if (error.message.includes("não encontrado")) {

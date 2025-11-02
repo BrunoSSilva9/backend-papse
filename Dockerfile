@@ -13,6 +13,8 @@ RUN npm install
 # 5. Copiar todo o código-fonte
 COPY . .
 
+RUN npx prisma generate
+
 # 6. Rodar o build para verificar erros de TypeScript durante a criação da imagem
 RUN npm run build
 

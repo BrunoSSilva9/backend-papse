@@ -1,10 +1,14 @@
 import { prisma } from "../lib/prisma.js";
+import bcrypt from "bcryptjs";
+import { Prisma, Role } from "@prisma/client";
 
 export interface CreateColaboradorDto {
   nome: string;
   matricula: string;
   data_admissao: Date;
   data_saida?: Date | null;
+  senha: string;
+  role: Role;
 }
 
 export type UpdateColaboradorDto = Partial<CreateColaboradorDto>;
@@ -12,15 +16,24 @@ export type UpdateColaboradorDto = Partial<CreateColaboradorDto>;
 export class ColaboradorService {
   async create(data: CreateColaboradorDto) {
     try {
+      const salt = await bcrypt.genSalt(10);
+      const senhaHash = await bcrypt.hash(data.senha, salt);
+
       const colaborador = await prisma.colaborador.create({
         data: {
           ...data,
           data_admissao: new Date(data.data_admissao),
           data_saida: data.data_saida ? new Date(data.data_saida) : null,
+          role: data.role,
+          senha: senhaHash,
         },
       });
-      return colaborador;
-    } catch (error) {
+      const { senha, ...colaboradorSemSenha } = colaborador;
+      return colaboradorSemSenha;
+    } catch (error: any) {
+      if (error.code === "P2002" && error.meta?.target.includes("matricula")) {
+        throw new Error("Esta matrícula já está cadastrada.");
+      }
       console.error("Erro ao criar colaborador:", error);
       throw new Error("Não foi possível criar o colaborador.");
     }

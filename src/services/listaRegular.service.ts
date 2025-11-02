@@ -1,5 +1,10 @@
 import { prisma } from "../lib/prisma.js";
-import { Prisma } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
+
+interface UsuarioLogado {
+  id: number;
+  role: Role;
+}
 
 export interface CreateListaRegularDto {
   idPaciente: number;
@@ -59,21 +64,31 @@ export class ListaRegularService {
     }
   }
 
-  async findAll() {
+  async findAll(usuario: UsuarioLogado) {
     try {
-      const lista = await prisma.listaRegular.findMany({
+      const queryOptions = {
         include: {
           paciente: true,
           colaborador: true,
         },
         orderBy: {
           idListaRegular: "asc",
-        },
-      });
-      return lista;
-    } catch (error: any) {
+        } as any,
+        where: {},
+      };
+
+      if (usuario.role === "BOLSISTA") {
+        queryOptions.where = {
+          idBolsista: usuario.id,
+        };
+      }
+
+      const listaRegular = await prisma.listaRegular.findMany(queryOptions);
+
+      return listaRegular;
+    } catch (error) {
       console.error("Erro ao buscar lista regular:", error);
-      throw new Error("Não foi possível buscar os registros da lista regular.");
+      throw new Error("Não foi possível buscar a lista regular.");
     }
   }
 
