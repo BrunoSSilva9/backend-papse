@@ -7,6 +7,9 @@ import listaRegularRoutes from "./routes/listaRegular.routes.js";
 import regularRoutes from "./routes/regular.routes.js";
 import historicoRoutes from "./routes/historico.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import swaggerUi from "swagger-ui-express";
+
+import swaggerDocs from "./swagger.json" with { type: "json"};
 
 console.log("✅ server.ts foi carregado");
 
@@ -16,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use("/api", authRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 app.use("/api", pacienteRoutes);
 app.use("/api", protocoloRoutes);

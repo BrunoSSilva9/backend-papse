@@ -1,0 +1,1696 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Backend PAPSE",
+        "description": "API REST para o sistema PAPSE, responsável pelo gerenciamento de pacientes, colaboradores, protocolos e listas (espera, regular e histórico). Inclui autenticação via JWT e controle de permissões baseado em roles (ADMIN, BOLSISTA). Fornece endpoints para cadastro, consulta, atualização e exclusão de registros, garantindo integração segura e organizada entre os módulos do sistema.",
+        "termsOfService": "https://papse.com.br/terms",
+        "contact": {
+            "name": "Equipe PAPSE",
+            "email": "suporte@papse.com",
+            "url": "https://papse.com.br"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/login": {
+            "post": {
+                "summary": "Autenticação do usuário",
+                "description": "Endpoint responsável por autenticar o usuário no sistema. Retorna um token JWT válido em caso de sucesso.",
+                "tags": [
+                    "Autenticação"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "matricula": {
+                                        "type": "string",
+                                        "example": "2023001234"
+                                    },
+                                    "senha_": {
+                                        "type": "string",
+                                        "example": "minhaSenha123"
+                                    }
+                                },
+                                "required": [
+                                    "matricula",
+                                    "senha_"
+                                ]
+                            },
+                            "example": {
+                                "matricula": "2023001234",
+                                "senha_": "minhaSenha123"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login bem-sucedido. Retorna o token JWT e informações do usuário autenticado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        },
+                                        "usuario": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nome": {
+                                                    "type": "string",
+                                                    "example": "Maria Souza"
+                                                },
+                                                "matricula": {
+                                                    "type": "string",
+                                                    "example": "2023001234"
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "example": "bolsista"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas. Matrícula ou senha incorretos."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor durante a autenticação."
+                    }
+                }
+            }
+        },
+        "/colaboradores": {
+            "post": {
+                "summary": "Cadastrar um novo colaborador",
+                "description": "Cria um novo colaborador no sistema. Requer autenticação JWT e permissão de administrador.",
+                "tags": [
+                    "Colaboradores"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "João Silva"
+                                    },
+                                    "matricula": {
+                                        "type": "string",
+                                        "example": "20240012"
+                                    },
+                                    "cargo": {
+                                        "type": "string",
+                                        "example": "Psicólogo"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "joao.silva@papse.com"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "11987654321"
+                                    },
+                                    "senha": {
+                                        "type": "string",
+                                        "example": "senhaSegura123"
+                                    },
+                                    "papel": {
+                                        "type": "string",
+                                        "example": "ADMIN"
+                                    }
+                                },
+                                "required": [
+                                    "nome",
+                                    "matricula",
+                                    "senha",
+                                    "papel"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Colaborador criado com sucesso."
+                    },
+                    "400": {
+                        "description": "Dados inválidos ou ausentes."
+                    },
+                    "401": {
+                        "description": "Token ausente ou inválido."
+                    },
+                    "403": {
+                        "description": "Acesso negado. O usuário não possui permissão ADMIN."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Listar todos os colaboradores",
+                "description": "Retorna uma lista com todos os colaboradores cadastrados. Requer autenticação JWT e permissão ADMIN.",
+                "tags": [
+                    "Colaboradores"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de colaboradores retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Colaborador"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente ou inválido."
+                    },
+                    "403": {
+                        "description": "Acesso negado. Permissão ADMIN necessária."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor."
+                    }
+                }
+            }
+        },
+        "/colaboradores/{id}": {
+            "get": {
+                "summary": "Buscar colaborador por ID",
+                "description": "Retorna as informações de um colaborador específico pelo ID. Requer autenticação JWT e permissão ADMIN.",
+                "tags": [
+                    "Colaboradores"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "description": "ID do colaborador"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Colaborador encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Colaborador"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID ausente ou inválido."
+                    },
+                    "404": {
+                        "description": "Colaborador não encontrado."
+                    },
+                    "401": {
+                        "description": "Token ausente ou inválido."
+                    },
+                    "403": {
+                        "description": "Acesso negado. ADMIN necessário."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor."
+                    }
+                }
+            },
+            "put": {
+                "summary": "Atualizar colaborador",
+                "description": "Atualiza os dados de um colaborador existente. Requer autenticação JWT e permissão ADMIN.",
+                "tags": [
+                    "Colaboradores"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "description": "ID do colaborador a ser atualizado"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "João da Silva"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "11999998888"
+                                    },
+                                    "cargo": {
+                                        "type": "string",
+                                        "example": "Psicólogo Clínico"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Colaborador atualizado com sucesso."
+                    },
+                    "400": {
+                        "description": "ID ou dados inválidos."
+                    },
+                    "404": {
+                        "description": "Colaborador não encontrado."
+                    },
+                    "401": {
+                        "description": "Token ausente ou inválido."
+                    },
+                    "403": {
+                        "description": "Acesso negado. ADMIN necessário."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Excluir colaborador",
+                "description": "Remove um colaborador existente do sistema. Requer autenticação JWT e permissão ADMIN.",
+                "tags": [
+                    "Colaboradores"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "description": "ID do colaborador a ser excluído"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Colaborador excluído com sucesso."
+                    },
+                    "400": {
+                        "description": "ID inválido."
+                    },
+                    "404": {
+                        "description": "Colaborador não encontrado."
+                    },
+                    "401": {
+                        "description": "Token ausente ou inválido."
+                    },
+                    "403": {
+                        "description": "Acesso negado. ADMIN necessário."
+                    },
+                    "500": {
+                        "description": "Erro interno no servidor."
+                    }
+                }
+            }
+        },
+        "/historico": {
+            "post": {
+                "summary": "Cria um novo registro de histórico",
+                "description": "Adiciona um novo histórico ao sistema.",
+                "tags": [
+                    "Histórico"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Historico"
+                            },
+                            "examples": {
+                                "Historico": {
+                                    "value": {
+                                        "idPaciente": 1,
+                                        "idBolsista": 2,
+                                        "descricao": "Paciente realizou sessão de acompanhamento psicológico.",
+                                        "data_registro": "2025-10-24T14:30:00Z"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Histórico criado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Historico"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paciente ou bolsista não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar histórico."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todos os registros de histórico",
+                "description": "Retorna todos os registros de histórico cadastrados.",
+                "tags": [
+                    "Histórico"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Historico"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar históricos."
+                    }
+                }
+            }
+        },
+        "/historico/{id}": {
+            "get": {
+                "summary": "Busca um registro de histórico pelo ID",
+                "description": "Retorna um histórico específico com base no ID informado.",
+                "tags": [
+                    "Histórico"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do histórico para busca",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Histórico encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Historico"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID do histórico não fornecido."
+                    },
+                    "404": {
+                        "description": "Histórico não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar histórico."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Exclui um registro de histórico",
+                "description": "Remove um registro de histórico do sistema.",
+                "tags": [
+                    "Histórico"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do histórico a ser removido",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Histórico removido com sucesso."
+                    },
+                    "400": {
+                        "description": "ID do histórico não fornecido."
+                    },
+                    "404": {
+                        "description": "Histórico não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao excluir histórico."
+                    }
+                }
+            }
+        },
+        "/listaespera": {
+            "post": {
+                "summary": "Adiciona um paciente à lista de espera",
+                "description": "Cria uma nova entrada na lista de espera, vinculada a um paciente.",
+                "tags": [
+                    "Lista de Espera"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ListaEspera"
+                            },
+                            "examples": {
+                                "ListaEspera": {
+                                    "value": {
+                                        "idPaciente": 1,
+                                        "data_entrada": "2025-10-24T14:30:00Z",
+                                        "status": "aguardando"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Entrada criada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListaEspera"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paciente não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar entrada na lista de espera."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todas as entradas da lista de espera",
+                "description": "Retorna todas as entradas registradas na lista de espera.",
+                "tags": [
+                    "Lista de Espera"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ListaEspera"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar lista de espera."
+                    }
+                }
+            }
+        },
+        "/listaespera/{id}": {
+            "get": {
+                "summary": "Busca uma entrada da lista de espera pelo ID",
+                "description": "Retorna uma entrada específica com base no ID informado.",
+                "tags": [
+                    "Lista de Espera"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID da entrada da lista de espera",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entrada encontrada.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListaEspera"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID não fornecido na URL."
+                    },
+                    "404": {
+                        "description": "Entrada da lista de espera não encontrada."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar entrada."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove uma entrada da lista de espera",
+                "description": "Exclui uma entrada da lista de espera do sistema.",
+                "tags": [
+                    "Lista de Espera"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID da entrada da lista de espera",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Entrada removida com sucesso."
+                    },
+                    "400": {
+                        "description": "ID não fornecido na URL."
+                    },
+                    "404": {
+                        "description": "Entrada da lista de espera não encontrada."
+                    },
+                    "500": {
+                        "description": "Erro interno ao remover entrada."
+                    }
+                }
+            }
+        },
+        "/listaregular": {
+            "post": {
+                "summary": "Adiciona um paciente à lista regular",
+                "description": "Cria uma nova entrada na lista regular, vinculada a um paciente já cadastrado.",
+                "tags": [
+                    "Lista Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ListaRegular"
+                            },
+                            "examples": {
+                                "ListaRegular": {
+                                    "value": {
+                                        "idPaciente": 1,
+                                        "data_entrada": "2025-10-24T14:30:00Z",
+                                        "status": "ativo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Entrada criada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListaRegular"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paciente não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar entrada na lista regular."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todas as entradas da lista regular",
+                "description": "Retorna todas as entradas registradas na lista regular. Bolsistas veem apenas suas próprias entradas.",
+                "tags": [
+                    "Lista Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ListaRegular"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nenhuma entrada encontrada."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar lista regular."
+                    }
+                }
+            }
+        },
+        "/listaregular/{id}": {
+            "get": {
+                "summary": "Busca uma entrada da lista regular pelo ID",
+                "description": "Retorna uma entrada específica da lista regular com base no ID informado.",
+                "tags": [
+                    "Lista Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID da entrada da lista regular",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entrada encontrada.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListaRegular"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Entrada não encontrada."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar entrada."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove uma entrada da lista regular",
+                "description": "Exclui uma entrada específica da lista regular com base no ID informado.",
+                "tags": [
+                    "Lista Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID da entrada da lista regular",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Entrada removida com sucesso."
+                    },
+                    "404": {
+                        "description": "Entrada não encontrada."
+                    },
+                    "500": {
+                        "description": "Erro interno ao remover entrada."
+                    }
+                }
+            }
+        },
+        "/pacientes": {
+            "post": {
+                "summary": "Cadastra um novo paciente",
+                "description": "Cria um novo registro de paciente no sistema PAPSE.",
+                "tags": [
+                    "Pacientes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Paciente"
+                            },
+                            "examples": {
+                                "Paciente": {
+                                    "value": {
+                                        "nome": "João da Silva",
+                                        "matricula": "200045651254",
+                                        "data_nascimento": "1990-06-15T00:00:00Z",
+                                        "telefone": "11987654321",
+                                        "data_inscricao": "2025-10-02T10:00:00Z",
+                                        "relato": "Paciente com histórico de alergias.",
+                                        "curso": "Medicina"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Paciente criado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Paciente"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar paciente."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todos os pacientes",
+                "description": "Retorna todos os pacientes cadastrados no sistema.",
+                "tags": [
+                    "Pacientes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de pacientes retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Paciente"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar pacientes."
+                    }
+                }
+            }
+        },
+        "/pacientes/{id}": {
+            "get": {
+                "summary": "Busca um paciente pelo ID",
+                "description": "Retorna os dados de um paciente específico pelo ID.",
+                "tags": [
+                    "Pacientes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do paciente",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paciente encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Paciente"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID do paciente não fornecido."
+                    },
+                    "404": {
+                        "description": "Paciente não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar paciente."
+                    }
+                }
+            },
+            "put": {
+                "summary": "Atualiza um paciente",
+                "description": "Atualiza os dados de um paciente existente.",
+                "tags": [
+                    "Pacientes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do paciente",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Paciente"
+                            },
+                            "examples": {
+                                "PacienteAtualizado": {
+                                    "value": {
+                                        "nome": "João da Silva",
+                                        "telefone": "11999999999",
+                                        "relato": "Atualização do histórico médico."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paciente atualizado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Paciente"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID do paciente não fornecido."
+                    },
+                    "404": {
+                        "description": "Paciente não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao atualizar paciente."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove um paciente",
+                "description": "Exclui um paciente do sistema com base no ID informado.",
+                "tags": [
+                    "Pacientes"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do paciente",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Paciente removido com sucesso."
+                    },
+                    "400": {
+                        "description": "ID do paciente não fornecido."
+                    },
+                    "404": {
+                        "description": "Paciente não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao remover paciente."
+                    }
+                }
+            }
+        },
+        "/protocolos": {
+            "post": {
+                "summary": "Cadastra um novo protocolo",
+                "description": "Cria um novo registro de protocolo vinculado a um paciente e bolsista.",
+                "tags": [
+                    "Protocolos"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Protocolo"
+                            },
+                            "examples": {
+                                "NovoProtocolo": {
+                                    "value": {
+                                        "data_inicio_atendimento": "2025-10-02T10:00:00Z",
+                                        "qtde_sessoes": 5,
+                                        "idPaciente": 1,
+                                        "idBolsista": 2
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Protocolo criado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Protocolo"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar protocolo."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todos os protocolos",
+                "description": "Retorna todos os protocolos cadastrados no sistema.",
+                "tags": [
+                    "Protocolos"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de protocolos retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Protocolo"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar protocolos."
+                    }
+                }
+            }
+        },
+        "/protocolos/{id}": {
+            "get": {
+                "summary": "Busca um protocolo pelo ID",
+                "description": "Retorna os dados de um protocolo específico pelo ID.",
+                "tags": [
+                    "Protocolos"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do protocolo",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protocolo encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Protocolo"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Protocolo não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar protocolo."
+                    }
+                }
+            },
+            "put": {
+                "summary": "Atualiza um protocolo",
+                "description": "Atualiza os dados de um protocolo existente.",
+                "tags": [
+                    "Protocolos"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do protocolo",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Protocolo"
+                            },
+                            "examples": {
+                                "ProtocoloAtualizado": {
+                                    "value": {
+                                        "qtde_sessoes": 6,
+                                        "data_inicio_atendimento": "2025-10-02T11:00:00Z"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Protocolo atualizado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Protocolo"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Protocolo não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao atualizar protocolo."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove um protocolo",
+                "description": "Exclui um protocolo do sistema com base no ID informado.",
+                "tags": [
+                    "Protocolos"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do protocolo",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Protocolo removido com sucesso."
+                    },
+                    "404": {
+                        "description": "Protocolo não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao remover protocolo."
+                    }
+                }
+            }
+        },
+        "/regular": {
+            "post": {
+                "summary": "Cadastra um novo registro regular",
+                "description": "Cria um novo registro na lista regular do sistema.",
+                "tags": [
+                    "Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Regular"
+                            },
+                            "examples": {
+                                "NovoRegistroRegular": {
+                                    "value": {
+                                        "nome": "João Silva",
+                                        "matricula": "200045651254",
+                                        "curso": "Engenharia",
+                                        "data_inscricao": "2025-10-02T10:00:00Z",
+                                        "telefone": "11999999999",
+                                        "relato": "Necessita de acompanhamento semanal"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registro regular criado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Regular"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao criar registro regular."
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lista todos os registros regulares",
+                "description": "Retorna todos os registros regulares cadastrados no sistema.",
+                "tags": [
+                    "Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de registros retornada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Regular"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar registros."
+                    }
+                }
+            }
+        },
+        "/regular/{id}": {
+            "get": {
+                "summary": "Busca um registro regular pelo ID",
+                "description": "Retorna os dados de um registro regular específico pelo ID.",
+                "tags": [
+                    "Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do registro regular",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registro regular encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Regular"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro regular não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar registro regular."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove um registro regular",
+                "description": "Exclui um registro regular do sistema com base no ID informado.",
+                "tags": [
+                    "Regular"
+                ],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do registro regular",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Registro regular removido com sucesso."
+                    },
+                    "404": {
+                        "description": "Registro regular não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno ao remover registro regular."
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "Colaborador": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "nome": {
+                    "type": "string",
+                    "example": "João Silva"
+                },
+                "matricula": {
+                    "type": "string",
+                    "example": "20240012"
+                },
+                "cargo": {
+                    "type": "string",
+                    "example": "Psicólogo"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "joao.silva@papse.com"
+                },
+                "telefone": {
+                    "type": "string",
+                    "example": "11987654321"
+                },
+                "papel": {
+                    "type": "string",
+                    "example": "ADMIN"
+                },
+                "data_criacao": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-10-24T18:30:00Z"
+                }
+            }
+        },
+        "Historico": {
+            "type": "object",
+            "properties": {
+                "idHistorico": {
+                    "type": "integer"
+                },
+                "idPaciente": {
+                    "type": "integer"
+                },
+                "idBolsista": {
+                    "type": "integer"
+                },
+                "descricao": {
+                    "type": "string"
+                },
+                "data_registro": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "idPaciente",
+                "idBolsista",
+                "descricao",
+                "data_registro"
+            ]
+        },
+        "ListaEspera": {
+            "type": "object",
+            "properties": {
+                "idListaEspera": {
+                    "type": "integer"
+                },
+                "idPaciente": {
+                    "type": "integer"
+                },
+                "data_entrada": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Status da entrada na fila (aguardando, atendido, cancelado)"
+                }
+            },
+            "required": [
+                "idPaciente",
+                "data_entrada",
+                "status"
+            ]
+        },
+        "ListaRegular": {
+            "type": "object",
+            "properties": {
+                "idListaRegular": {
+                    "type": "integer"
+                },
+                "idPaciente": {
+                    "type": "integer"
+                },
+                "data_entrada": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Status da entrada (ativo, concluído, cancelado)"
+                }
+            },
+            "required": [
+                "idPaciente",
+                "data_entrada",
+                "status"
+            ]
+        },
+        "Paciente": {
+            "type": "object",
+            "properties": {
+                "idPaciente": {
+                    "type": "integer"
+                },
+                "nome": {
+                    "type": "string"
+                },
+                "matricula": {
+                    "type": "string"
+                },
+                "data_nascimento": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "telefone": {
+                    "type": "string"
+                },
+                "data_inscricao": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "relato": {
+                    "type": "string"
+                },
+                "curso": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "nome",
+                "matricula",
+                "data_nascimento",
+                "data_inscricao",
+                "curso"
+            ]
+        },
+        "Protocolo": {
+            "type": "object",
+            "properties": {
+                "idProtocolo": {
+                    "type": "integer"
+                },
+                "data_inicio_atendimento": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "qtde_sessoes": {
+                    "type": "integer"
+                },
+                "idPaciente": {
+                    "type": "integer"
+                },
+                "idBolsista": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "data_inicio_atendimento",
+                "qtde_sessoes",
+                "idPaciente",
+                "idBolsista"
+            ]
+        },
+        "Regular": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "nome": {
+                    "type": "string"
+                },
+                "matricula": {
+                    "type": "string"
+                },
+                "curso": {
+                    "type": "string"
+                },
+                "data_inscricao": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "telefone": {
+                    "type": "string"
+                },
+                "relato": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "nome",
+                "matricula",
+                "curso",
+                "data_inscricao"
+            ]
+        }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
