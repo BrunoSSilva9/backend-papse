@@ -9,7 +9,7 @@ const regularController = new RegularController();
 router.post("/regular", authMiddleware, checkRole(["ADMIN"]), (req, res) =>
   regularController.create(req, res)
 );
-router.get("/regular", authMiddleware, checkRole(["ADMIN"]), (req, res) =>
+router.get("/regular", authMiddleware, checkRole(["ADMIN", "BOLSISTA"]), (req, res) =>
   regularController.findAll(req, res)
 );
 router.get("/regular/:id", authMiddleware, checkRole(["ADMIN"]), (req, res) =>

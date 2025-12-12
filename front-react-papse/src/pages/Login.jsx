@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import HeaderMenu from '../components/shared/HeaderMenu';
 import styles from './Login.module.css';
 
 const Login = () => {
@@ -30,6 +31,9 @@ const Login = () => {
 
     return (
         <div className={styles.loginWrapper}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 100 }}>
+                <HeaderMenu />
+            </div>
             <section className={styles.loginSection}>
                 <div className={styles.loginCard}>
                     <form onSubmit={handleSubmit(onSubmit)}>

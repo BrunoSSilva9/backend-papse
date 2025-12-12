@@ -56,7 +56,11 @@ function App() {
                 <PatientList
                   status="lista_de_espera"
                   title="Lista de Espera"
-                  nextStatus="atendimento_protocolo"
+                  transitions={[
+                    { label: 'Mover para Espera Regular', target: 'espera_regulares' },
+                    { label: 'Mover para Protocolo', target: 'atendimento_protocolo' },
+                    { label: 'Mover para Regular', target: 'atendimento_regular' }
+                  ]}
                   canEncerrar={true}
                 />
               </ProtectedRoute>
@@ -69,7 +73,11 @@ function App() {
                 <PatientList
                   status="espera_regulares"
                   title="Lista de Espera para Atendimentos Regulares"
-                  nextStatus="atendimento_regular"
+                  transitions={[
+                    { label: 'Mover para Lista de Espera', target: 'lista_de_espera' },
+                    { label: 'Mover para Protocolo', target: 'atendimento_protocolo' },
+                    { label: 'Mover para Regular', target: 'atendimento_regular' }
+                  ]}
                   canEncerrar={true}
                 />
               </ProtectedRoute>
@@ -82,7 +90,11 @@ function App() {
                 <PatientList
                   status="atendimento_protocolo"
                   title="Lista de Atendimentos de Protocolo"
-                  nextStatus="espera_regulares"
+                  transitions={[
+                    { label: 'Mover para Lista de Espera', target: 'lista_de_espera' },
+                    { label: 'Mover para Espera Regular', target: 'espera_regulares' },
+                    { label: 'Mover para Regular', target: 'atendimento_regular' }
+                  ]}
                   canEncerrar={true}
                 />
               </ProtectedRoute>
@@ -95,7 +107,11 @@ function App() {
                 <PatientList
                   status="atendimento_regular"
                   title="Lista de Atendimentos Regulares"
-                  nextStatus={null}
+                  transitions={[
+                    { label: 'Mover para Lista de Espera', target: 'lista_de_espera' },
+                    { label: 'Mover para Espera Regular', target: 'espera_regulares' },
+                    { label: 'Mover para Protocolo', target: 'atendimento_protocolo' }
+                  ]}
                   canEncerrar={true}
                 />
               </ProtectedRoute>

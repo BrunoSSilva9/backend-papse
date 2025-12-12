@@ -12,16 +12,13 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
+    const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('papse_user');
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-            setIsAuthenticated(true);
-        }
-    }, []);
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return !!localStorage.getItem('papse_user');
+    });
 
     const login = async (matricula, senha) => {
         try {

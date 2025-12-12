@@ -34,7 +34,7 @@ const PatientCard = ({ patient, index, onEncaminhar, onEncerrar, showPosition = 
     const handleEncaminhar = (e) => {
         e.preventDefault();
         if (onEncaminhar) {
-            onEncaminhar(patient.id);
+            onEncaminhar(patient);
         }
         setMenuOpen(false);
     };
@@ -42,7 +42,7 @@ const PatientCard = ({ patient, index, onEncaminhar, onEncerrar, showPosition = 
     const handleEncerrar = (e) => {
         e.preventDefault();
         if (onEncerrar) {
-            onEncerrar(patient.id);
+            onEncerrar(patient);
         }
         setMenuOpen(false);
     };
@@ -57,11 +57,19 @@ const PatientCard = ({ patient, index, onEncaminhar, onEncerrar, showPosition = 
                         ...
                     </button>
                     <div className={`${styles.cardDropdownMenu} ${menuOpen ? styles.active : ''}`}>
-                        {onEncaminhar && (
-                            <a href="#" onClick={handleEncaminhar}>
-                                Encaminhar para Protocolo
+                        {onEncaminhar && onEncaminhar.map((transition, idx) => (
+                            <a
+                                key={idx}
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    transition.action(patient);
+                                    setMenuOpen(false);
+                                }}
+                            >
+                                {transition.label}
                             </a>
-                        )}
+                        ))}
                         {onEncerrar && (
                             <a href="#" onClick={handleEncerrar}>
                                 Encerrar Inscrição
@@ -77,11 +85,14 @@ const PatientCard = ({ patient, index, onEncaminhar, onEncerrar, showPosition = 
             </div>
 
             <div className={styles.cardBodyDetalhes}>
-                <p><strong>Email:</strong> <span>{patient.email}</span></p>
+
                 <p><strong>Número:</strong> <span>{patient.telefone}</span></p>
                 <p><strong>Curso:</strong> <span>{patient.curso}</span></p>
                 <p><strong>Matrícula:</strong> <span>{patient.matricula}</span></p>
                 <p><strong>Motivo:</strong> <span>{patient.motivo || 'Não informado'}</span></p>
+                {patient.bolsistaNome && (
+                    <p><strong>Bolsista Responsável:</strong> <span>{patient.bolsistaNome}</span></p>
+                )}
             </div>
 
             <div className={styles.cardFooter}>

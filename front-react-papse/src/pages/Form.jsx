@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { createInscricao } from '../services/api';
+import HeaderMenu from '../components/shared/HeaderMenu';
 import styles from './Form.module.css';
 
 const Form = () => {
@@ -51,6 +52,9 @@ const Form = () => {
 
     return (
         <div className={styles.contentWrapper}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 100 }}>
+                <HeaderMenu />
+            </div>
             <div className={styles.formSection}>
                 <div className={styles.formCard}>
                     <h1>Ficha de Inscrição</h1>
