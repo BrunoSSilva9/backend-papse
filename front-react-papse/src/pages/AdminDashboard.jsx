@@ -77,6 +77,7 @@ const AdminDashboard = () => {
             <nav className={styles.subNav}>
                 <Link to="/admin" className={styles.active}>Gerenciar Atendimentos</Link>
                 <Link to="/relatorio">Relatório</Link>
+                <Link to="/colaboradores">Colaboradores</Link>
             </nav>
 
             <main className={styles.cardsGrid}>

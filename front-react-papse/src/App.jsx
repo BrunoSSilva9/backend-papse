@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Bolsista from './pages/Bolsista';
 import PatientList from './pages/PatientList';
 import Report from './pages/Report';
+import Collaborators from './pages/Collaborators';
 import './styles/globals.css';
 
 // Protected Route wrapper
@@ -46,6 +47,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Bolsista />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/colaboradores"
+            element={
+              <ProtectedRoute>
+                <Collaborators />
               </ProtectedRoute>
             }
           />

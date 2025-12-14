@@ -81,6 +81,14 @@ export const getBolsistas = () => {
     return axios.get(`${API_URL}/colaboradores`);
 };
 
+export const createColaborador = (data) => {
+    return axios.post(`${API_URL}/colaboradores`, data);
+};
+
+export const deleteColaborador = (id) => {
+    return axios.delete(`${API_URL}/colaboradores/${id}`);
+};
+
 // Facade for backward compatibility or easier usage
 export const fetchInscricoes = (status = null) => {
     if (status === 'lista_de_espera') return getListaEspera();
