@@ -15,7 +15,7 @@ Reconstrução completa do sistema PAPSE em React, mantendo 100% da funcionalida
 
 ```bash
 # Clonar o repositório
-cd /home/joaomarcos/Downloads/Projeto_Papes.github.io-main/react-papse
+cd https://github.com/BrunoSSilva9/backend-papse.git
 
 # Instalar dependências
 npm install
@@ -180,14 +180,14 @@ Todas as chamadas à API através do serviço `api.js`:
 ### 1. Iniciar Backend (JSON Server)
 
 ```bash
-cd /home/joaomarcos/Downloads/Projeto_Papes.github.io-main
-npx json-server --watch db.json --port 3000
+cd /Backend_Papse
+Docker compose up -d
 ```
 
 ### 2. Iniciar Frontend React
 
 ```bash
-cd /home/joaomarcos/Downloads/Projeto_Papes.github.io-main/react-papse
+cd /Front-react-papse
 npm run dev
 ```
 
